@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "engie-hr": {
+      "command": "engie-hr-mcp",
+      "args": [],
+      "env": {
+        "ENGIE_USERNAME": "your_username",
+        "ENGIE_PASSWORD": "your_password"
+      }
+    }
+  }
+}

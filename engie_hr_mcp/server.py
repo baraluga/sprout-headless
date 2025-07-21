@@ -29,7 +29,7 @@ from mcp.types import (
 )
 import mcp.types as types
 
-from engie_hr_login import ENGIEHRLogin
+from .login import ENGIEHRLogin
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

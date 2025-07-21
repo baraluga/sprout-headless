@@ -45,9 +45,9 @@ Repository = "https://github.com/baraluga/sprout-headless"
 Issues = "https://github.com/baraluga/sprout-headless/issues"
 
 [project.scripts]
-engie-hr-mcp = "mcp_server:main"
+engie-hr-mcp = "engie_hr_mcp.server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["*"]
+include = ["engie_hr_mcp*"]
 exclude = ["tests*", "__pycache__*", "*.pyc"]
