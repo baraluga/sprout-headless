@@ -17,7 +17,7 @@ from datetime import datetime, date
 
 
 class ENGIEHRLogin:
-    def __init__(self):
+    def __init__(self, username: str = None, password: str = None):
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
@@ -26,6 +26,11 @@ class ENGIEHRLogin:
         self.sso_url = "https://sso.sprout.ph/"
         self.auth_params = {}
         self.dashboard_cookies = {}
+        
+        # Store credentials for automatic authentication
+        self.username = username or "bperalta"  # Default username
+        self.password = password or "KKrm7MpdNQijfSM@"  # Default password
+        self.session_file = "engie_session.json"
 
     def get_initial_auth_params(self) -> bool:
         """
@@ -294,39 +299,104 @@ class ENGIEHRLogin:
         """
         Submit a clock-in request to the HR system.
         
-        This function will:
-        - Navigate to the time tracking/attendance page
-        - Find the clock-in button or form
-        - Submit the clock-in request with current timestamp
-        - Verify the action was successful
+        This function automatically handles authentication if no valid session exists.
         
         Returns:
             bool: True if clock-in successful, False otherwise
         """
-        # TODO: Implement clock-in functionality
-        pass
+        try:
+            # Ensure we have an authenticated session
+            if not self._ensure_authenticated():
+                print("❌ Failed to authenticate. Cannot clock in.")
+                return False
+            
+            # TODO: Implement actual clock-in functionality
+            # This would involve finding and clicking the clock-in button on the HR system
+            print("🕐 Clock-in functionality not yet implemented")
+            print("💡 Use apply_coa() for time entry corrections")
+            return False
+            
+        except Exception as e:
+            print(f"❌ Error during clock-in: {e}")
+            return False
 
     def clock_out(self) -> bool:
         """
         Submit a clock-out request to the HR system.
         
-        This function will:
-        - Navigate to the time tracking/attendance page  
-        - Find the clock-out button or form
-        - Submit the clock-out request with current timestamp
-        - Verify the action was successful
+        This function automatically handles authentication if no valid session exists.
         
         Returns:
             bool: True if clock-out successful, False otherwise
         """
-        # TODO: Implement clock-out functionality
-        pass
+        try:
+            # Ensure we have an authenticated session
+            if not self._ensure_authenticated():
+                print("❌ Failed to authenticate. Cannot clock out.")
+                return False
+            
+            # TODO: Implement actual clock-out functionality
+            # This would involve finding and clicking the clock-out button on the HR system
+            print("🕐 Clock-out functionality not yet implemented")
+            print("💡 Use apply_coa() for time entry corrections")
+            return False
+            
+        except Exception as e:
+            print(f"❌ Error during clock-out: {e}")
+            return False
+
+    def _ensure_authenticated(self) -> bool:
+        """
+        Ensure we have a valid authenticated session.
+        
+        This method will:
+        1. Try to load an existing session
+        2. Test if the session is still valid
+        3. Perform fresh authentication if needed
+        
+        Returns:
+            bool: True if authentication successful, False otherwise
+        """
+        try:
+            # First, try to load an existing session
+            if self.load_session(self.session_file):
+                if self.test_authenticated_access():
+                    print("✅ Using existing valid session")
+                    return True
+                else:
+                    print("🔄 Existing session expired, performing fresh authentication...")
+            else:
+                print("🔄 No existing session found, performing fresh authentication...")
+            
+            # Perform fresh authentication
+            print(f"🔐 Authenticating as {self.username}...")
+            
+            if not self.get_initial_auth_params():
+                print("❌ Failed to get authentication parameters")
+                return False
+            
+            if not self.perform_login(self.username, self.password):
+                print("❌ Login failed")
+                return False
+            
+            if not self.test_authenticated_access():
+                print("❌ Authentication verification failed")
+                return False
+            
+            # Save the session for future use
+            self.save_session(self.session_file)
+            print("✅ Authentication successful, session saved")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error during authentication: {e}")
+            return False
 
     def apply_coa(self, target_date: str, time_in: str = None, time_out: str = None, reason: str = "forgot to in/out", type_other: str = "forgot to in/out") -> bool:
         """
         Apply for Certificate of Attendance (COA) using the actual API endpoints discovered through network analysis.
         
-        This function uses the real COA submission API with proper payload structure.
+        This function automatically handles authentication if no valid session exists.
         You can specify just IN time, just OUT time, or both.
         
         Args:
@@ -340,19 +410,24 @@ class ENGIEHRLogin:
             bool: True if COA application successful, False otherwise
             
         Examples:
-            # Apply COA for both IN and OUT
+            # Apply COA for both IN and OUT (auto-login if needed)
             hr_login.apply_coa('2025-07-19', '09:00', '17:00')
             
-            # Apply COA for just clock-in
+            # Apply COA for just clock-in (auto-login if needed)
             hr_login.apply_coa('2025-07-19', time_in='09:00')
             
-            # Apply COA for just clock-out  
+            # Apply COA for just clock-out (auto-login if needed)
             hr_login.apply_coa('2025-07-19', time_out='17:00')
         """
         try:
             # Validate that at least one time is provided
             if not time_in and not time_out:
                 print("❌ Either time_in or time_out (or both) must be provided")
+                return False
+            
+            # Ensure we have an authenticated session before proceeding
+            if not self._ensure_authenticated():
+                print("❌ Failed to authenticate. Cannot apply COA.")
                 return False
             
             print(f"🎯 Applying COA for {target_date}")
