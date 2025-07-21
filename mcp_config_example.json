@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "engie-hr": {
+      "command": "python3",
+      "args": ["mcp_server.py"],
+      "cwd": "/path/to/sprout-headless",
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  }
+}
